@@ -80,7 +80,7 @@ public class WebExtractor {
 		        
 		    }  catch (MalformedURLException mue) {
 		    	//ignore dead links
-		    	//mue.printStackTrace();
+		    	mue.printStackTrace();
 		    } catch (IOException ioe) {
 		    	//ignore IO error
 		    	//ioe.printStackTrace();
@@ -159,8 +159,11 @@ public class WebExtractor {
 
             	String addr="";     	
             	URI uri=new URI(link);  	
-            	if(!uri.isAbsolute()){	            	
-            		addr=url.getProtocol()+"://"+url.getHost()+absolutePath+"/"+link;
+            	if(!uri.isAbsolute()){
+            		if(link.charAt(0) == '/'){
+            			link = link.substring(1);
+            		}
+            		addr=url.getProtocol()+"://"+url.getHost()+absolutePath +"/"+ link;
             		ret.add(addr);
             	}else{
             		if(link.contains(url.getHost())){
