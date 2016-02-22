@@ -27,12 +27,10 @@ public class WebBot implements Runnable, StatisticalAnalysisInterface {
 	@Override
 	public void run() {
 		synchronized (URLs) {
-			//System.out.println(Thread.activeCount());
 			if ((URLs.size() > MAX_PAGES_NUM || total_character_count > MAX_CHAR_COUNT)) {
 				return;
 			}
 		}
-		// System.out.println(this.URL);
 		try {
 			this.count(this.URL);
 		} catch (InterruptedException e) {
@@ -45,12 +43,10 @@ public class WebBot implements Runnable, StatisticalAnalysisInterface {
 
 		synchronized (URLs) {
 			if (URLs.contains(URL)) {
-				// System.out.println("This page has been visited: " + URL);
 				return;
 			}
 			URLs.add(URL);
 		}
-		//System.out.println("Visiting: " + URL);
 		String websiteURL = URL;
 
 		// get HTML
@@ -65,10 +61,11 @@ public class WebBot implements Runnable, StatisticalAnalysisInterface {
 				Integer currentCount = WebBot.letterOccurrenceOverall.get(c);
 				if (currentCount == null)
 					currentCount = 0;
+				Integer charAtPage = this.letterOccurrencePage.get(c);
+				this.current_character_count += charAtPage;
+				WebBot.letterOccurrenceOverall.put(c, currentCount + charAtPage);
+				total_character_count += charAtPage;
 				currentCount += this.letterOccurrencePage.get(c);
-				WebBot.letterOccurrenceOverall.put(c, currentCount);
-				this.current_character_count += currentCount;
-				total_character_count += currentCount;
 			}
 		}
 
@@ -85,15 +82,14 @@ public class WebBot implements Runnable, StatisticalAnalysisInterface {
 		System.out.println("Total number of characters: " + total_character_count);
 		System.out.println("Pages visited: " + URLs.size());
 		Iterator it = letterOccurrenceOverall.entrySet().iterator();
-	    while (it.hasNext()) {
-	        Map.Entry pair = (Map.Entry)it.next();
-	        Character letter = (Character) pair.getKey();
-	        Integer count = (Integer)pair.getValue();
-	        Double percentage = (count.doubleValue()*100)/Integer.valueOf(total_character_count).doubleValue();
-	        System.out.println(String.format("%c = %.3f%%", letter, percentage.doubleValue()));
-	        //System.out.println(letter + " = " + percentage + "%");
-	        it.remove(); // avoids a ConcurrentModificationException
-	    }
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry) it.next();
+			Character letter = (Character) pair.getKey();
+			Integer count = (Integer) pair.getValue();
+			Double percentage = (count.doubleValue() * 100) / Integer.valueOf(total_character_count).doubleValue();
+			System.out.println(String.format("%c = %.3f%%", letter, percentage.doubleValue()));
+			it.remove();
+		}
 	}
 
 	public WebBot(String URL) {
@@ -106,13 +102,11 @@ public class WebBot implements Runnable, StatisticalAnalysisInterface {
 		String websiteURL = "http://www.theguardian.com/uk";
 		Thread t = new Thread(new WebBot(websiteURL));
 		t.start();
-		while(Thread.activeCount() > 1){
+		while (Thread.activeCount() > 1) {
 		}
-		if ((URLs.size() > MAX_PAGES_NUM || total_character_count > MAX_CHAR_COUNT) || Thread.activeCount() == 1) {
-			WebBot stats = new WebBot(null);
-			stats.showTotalStatistics();
-			return;
-		}
+
+		WebBot stats = new WebBot(null);
+		stats.showTotalStatistics();
 
 	}
 
